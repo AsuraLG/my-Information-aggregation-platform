@@ -1,0 +1,16 @@
+# 标签配置
+# id: 在 sources.yaml 中引用的唯一标识符
+# desc: 展示时使用的中文描述
+
+tags:
+  - id: "tech"
+    desc: "科技资讯"
+
+  - id: "python"
+    desc: "Python技术"
+
+  - id: "programming"
+    desc: "编程开发"
+
+  - id: "opensource"
+    desc: "开源项目"

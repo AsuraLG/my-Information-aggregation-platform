@@ -205,3 +205,18 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# 项目运行时生成的目录
+data/
+output/
+.env
+
+# 含敏感信息的配置文件（使用 settings.yaml.example 作为模板）
+config/settings.yaml
+
+# macOS
+.DS_Store
+
+# Claude / OMC 本地状态
+.claude/
+.omc/

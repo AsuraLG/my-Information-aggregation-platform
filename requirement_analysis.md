@@ -1,1 +1,0 @@
-# my-Information-aggregation-platform

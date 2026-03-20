@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ site_title }}</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; max-width: 860px; margin: 0 auto; padding: 1.5rem; color: #333; }
+    h1 { font-size: 1.6rem; border-bottom: 2px solid #eee; padding-bottom: .5rem; }
+    .meta { color: #888; font-size: .85rem; margin-bottom: 2rem; }
+    .tag-section { margin-bottom: 2.5rem; }
+    .tag-section h2 { font-size: 1.2rem; color: #2563eb; margin-bottom: .5rem; }
+    .source-block { background: #f9fafb; border-left: 3px solid #2563eb; padding: .8rem 1rem; margin-bottom: 1rem; border-radius: 0 4px 4px 0; }
+    .source-block h3 { font-size: .95rem; color: #555; margin: 0 0 .4rem; }
+    .summary { line-height: 1.7; font-size: .9rem; }
+    .summary p { margin: .3rem 0; }
+    .summary ul, .summary ol { padding-left: 1.4rem; margin: .3rem 0; }
+    .summary code { background: #f3f4f6; padding: .1em .3em; border-radius: 3px; font-size: .85em; }
+    .item-count { font-size: .75rem; color: #aaa; margin-top: .4rem; }
+    footer { margin-top: 3rem; font-size: .8rem; color: #bbb; text-align: center; }
+  </style>
+</head>
+<body>
+  <h1>{{ site_title }}</h1>
+  <p class="meta">{{ site_description }}  ·  生成时间：{{ generated_at }}  ·  数据日期：{{ date }}</p>
+
+  {% for tag, sources in summaries_by_tag.items() %}
+  <div class="tag-section">
+    <h2># {{ tag }}</h2>
+    {% for item in sources %}
+    <div class="source-block">
+      <h3>{{ item.source_desc }}</h3>
+      <div class="summary">{{ item.summary_html | safe }}</div>
+      <div class="item-count">基于 {{ item.item_count }} 条原始数据</div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <p>暂无摘要数据。</p>
+  {% endfor %}
+
+  <footer>由 info-aggregator 自动生成</footer>
+</body>
+</html>

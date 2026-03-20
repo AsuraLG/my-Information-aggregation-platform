@@ -1,0 +1,33 @@
+# 信息源配置
+# 每个信息源需要指定：id、type、标签列表、采集频率（cron 表达式，UTC 时区）
+
+sources:
+  - id: "hacker_news"
+    desc: "Hacker News"
+    type: rss
+    url: "https://news.ycombinator.com/rss"
+    tags: ["tech", "programming"]
+    schedule: "0 */6 * * *"  # 每6小时采集一次
+
+  - id: "python_blog"
+    desc: "Python 官方博客"
+    type: rss
+    url: "https://feeds.feedburner.com/PythonInsider"
+    tags: ["python", "programming"]
+    schedule: "0 8 * * *"  # 每天 UTC 8:00
+
+  - id: "github_trending_python"
+    desc: "GitHub Trending · Python"
+    type: github_trending
+    language: "python"
+    period: "daily"  # daily / weekly / monthly
+    tags: ["python", "opensource"]
+    schedule: "0 9 * * *"  # 每天 UTC 9:00
+
+  - id: "github_trending_general"
+    desc: "GitHub Trending · 全语言"
+    type: github_trending
+    language: ""  # 空字符串表示不限语言
+    period: "daily"
+    tags: ["tech", "opensource"]
+    schedule: "0 9 * * *"
