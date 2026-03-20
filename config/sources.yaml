@@ -24,7 +24,7 @@ sources:
     tags: ["python", "opensource"]
     schedule: "0 9 * * *"  # 每天 UTC 9:00
 
-  - id: "github_trending_general"
+  - id: "github_trending_java"
     desc: "GitHub Trending · 全语言"
     type: github_trending
     language: ""  # 空字符串表示不限语言

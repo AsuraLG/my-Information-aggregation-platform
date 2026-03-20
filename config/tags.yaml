@@ -9,8 +9,14 @@ tags:
   - id: "python"
     desc: "Python技术"
 
+  - id: "java"
+    desc: "Java技术"
+
   - id: "programming"
     desc: "编程开发"
 
   - id: "opensource"
     desc: "开源项目"
+
+  - id: "AI"
+    desc: "人工智能"
