@@ -1,5 +1,5 @@
 <!-- Parent: ../AGENTS.md -->
-<!-- Generated: 2026-03-19 | Updated: 2026-03-19 -->
+<!-- Generated: 2026-03-19 | Updated: 2026-03-20 -->
 
 # collector
 
@@ -28,8 +28,9 @@ _无子目录。_
 - GitHub Trending 无官方 API，需通过 HTTP 抓取页面或使用第三方库
 
 ### Testing Requirements
-- 网络请求需可 mock，方便单元测试
-- 测试用例覆盖：正常采集、网络超时、空结果、解析异常
+- **单元测试必须完善**，使用 `pytest`
+- 网络请求需可 mock
+- 覆盖：正常采集、网络超时、空结果、解析异常
 
 ### Common Patterns
 采集器接口约定：

@@ -25,13 +25,16 @@
 - 配置文件驱动：所有可变参数均在 `config/` 中定义，代码不硬编码业务参数
 
 ## 敏感信息
-- API key 通过环境变量读取（`ANTHROPIC_API_KEY`），不写入任何配置文件
+- API key 通过配置文件（`config/settings.yaml`，已加入 `.gitignore`）或环境变量（`INFO_AGG_AI_API_KEY`）读取
+- 优先级：`settings.yaml` > 环境变量（`INFO_AGG_AI_*` 前缀）
 - `.env` 文件已加入 `.gitignore`，不提交到 git
 
 ## 测试
-- 添加单元测试前需与用户确认
+- **单元测试是项目质量的基础保障，必须完善**
 - 测试框架：pytest（通过 `uv run pytest` 执行）
+- 覆盖重点：converter、prompt_builder、renderer 等核心逻辑；AI 调用和网络请求需可 mock
+- 新增功能时同步补充对应测试
 
 ## 作者信息
-- author: ligen20
+- author: AsuraLG
 - 版权年份：2026

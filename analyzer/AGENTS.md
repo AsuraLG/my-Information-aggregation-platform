@@ -1,5 +1,5 @@
 <!-- Parent: ../AGENTS.md -->
-<!-- Generated: 2026-03-19 | Updated: 2026-03-19 -->
+<!-- Generated: 2026-03-19 | Updated: 2026-03-20 -->
 
 # analyzer
 
@@ -29,8 +29,9 @@ _无子目录。_
 - 每次分析结果通过 `storage.repository` 写入，不直接操作文件
 
 ### Testing Requirements
-- AI 调用需可 mock，避免测试时产生真实费用
-- 测试覆盖：正常分析、空数据、AI 调用失败的降级处理
+- **单元测试必须完善**，使用 `pytest`
+- AI 调用需可 mock（避免测试时产生真实费用）
+- 覆盖：正常分析、空数据、AI 调用失败的降级处理
 
 ### Common Patterns
 分析流程约定：
@@ -62,7 +63,6 @@ def run_analysis(date: str) -> list[SummaryResult]:
 - `config/settings.yaml` — 读取 AI 模型配置
 
 ### External
-- `anthropic` 或 `openai` SDK — AI 调用
-- `jinja2` — Prompt 模板渲染（如需复杂模板）
+- `anthropic` — AI 调用（Anthropic 兼容 API）
 
 <!-- MANUAL: Any manually added notes below this line are preserved on regeneration -->

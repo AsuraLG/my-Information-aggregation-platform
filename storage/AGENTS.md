@@ -1,5 +1,5 @@
 <!-- Parent: ../AGENTS.md -->
-<!-- Generated: 2026-03-19 | Updated: 2026-03-19 -->
+<!-- Generated: 2026-03-19 | Updated: 2026-03-20 -->
 
 # storage
 
@@ -28,17 +28,14 @@ _无子目录。_
 - `converter.py` 中每种信息源类型对应一个转换函数，新增信息源时在此扩展
 
 ### Testing Requirements
+- **单元测试必须完善**，使用 `pytest`
 - `models.py` 的序列化/反序列化需有测试
 - `converter.py` 的转换逻辑需覆盖各信息源类型
 
 ### Common Patterns
-统一数据结构约定：
+统一数据结构（pydantic v2 BaseModel）：
 ```python
-from dataclasses import dataclass, field
-from datetime import datetime
-
-@dataclass
-class UnifiedItem:
+class UnifiedItem(BaseModel):
     id: str                    # 唯一标识（source_id + 原始 id 的 hash）
     source_id: str             # 来源信息源 id
     title: str
@@ -48,12 +45,11 @@ class UnifiedItem:
     tags: list[str]            # 来自信息源配置的标签
     raw_data: dict             # 保留原始字段，便于调试
 
-@dataclass
-class SummaryResult:
+class SummaryResult(BaseModel):
     date: str                  # YYYY-MM-DD
     tag: str                   # 按标签维度
-    source_id: str | None      # 按信息源维度（可为 None 表示跨源汇总）
-    summary: str               # AI 生成的摘要内容
+    source_id: str             # 按信息源维度
+    summary: str               # AI 生成的摘要内容（markdown 格式）
     item_count: int            # 本次分析的条目数
     generated_at: datetime
 ```
@@ -65,7 +61,7 @@ class SummaryResult:
 - 被 `collector/`、`analyzer/`、`publisher/` 依赖
 
 ### External
-- `pydantic` — 数据校验（推荐）
-- 标准库 `json`、`sqlite3`（按选型决定）
+- `pydantic>=2.0` — 数据校验
+- 标准库 `json`（当前持久化格式）
 
 <!-- MANUAL: Any manually added notes below this line are preserved on regeneration -->

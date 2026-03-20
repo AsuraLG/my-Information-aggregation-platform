@@ -1,5 +1,5 @@
 <!-- Parent: ../AGENTS.md -->
-<!-- Generated: 2026-03-19 | Updated: 2026-03-19 -->
+<!-- Generated: 2026-03-19 | Updated: 2026-03-20 -->
 
 # scheduler
 
@@ -28,8 +28,9 @@ _无子目录。_
 - 建议使用 `APScheduler` 的 cron 触发器，与 `config/schedule.yaml` 中的 cron 表达式对应
 
 ### Testing Requirements
+- **单元测试必须完善**，使用 `pytest`
 - 调度逻辑本身较难单元测试，重点测试 `jobs.py` 中的任务函数
-- 可通过手动触发 `collect_job()` / `analyze_publish_job()` 验证端到端流程
+- 可通过手动触发 `collect_all_job()` / `analyze_publish_job()` 验证端到端流程
 
 ### Common Patterns
 调度器启动约定：

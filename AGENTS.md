@@ -1,4 +1,4 @@
-<!-- Generated: 2026-03-19 | Updated: 2026-03-19 -->
+<!-- Generated: 2026-03-19 | Updated: 2026-03-20 -->
 
 # my-Information-aggregation-platform
 
@@ -11,11 +11,13 @@
 
 | File | Description |
 |------|-------------|
-| `README.md` | 项目概述（待补充） |
-| `requirement_analysis.md` | 需求分析文档 |
-| `LICENSE` | MIT License — 版权归 AsuraLG (2026) |
-| `.gitignore` | Python 项目忽略规则 |
+| `README.md` | 项目概述、快速开始、配置说明 |
+| `LICENSE` | GNU GPL v3 — 版权归 AsuraLG (2026) |
+| `main.py` | CLI 入口：collect / analyze / publish / run 子命令 |
+| `pyproject.toml` | 项目依赖与构建配置（uv 管理） |
+| `.gitignore` | Python 项目忽略规则，含 data/、output/、config/settings.yaml |
 | `AGENTS.md` | 本文件 — AI Agent 导航文档 |
+| `CLAUDE.md` | 项目开发规范（包管理、代码风格、测试要求、作者信息）|
 
 ## Subdirectories
 
@@ -47,15 +49,16 @@
 
 ### Working In This Directory
 - **语言**: Python 3.9.6，使用 `python` 命令（不用 `python3`）
-- **包管理**: 优先使用 `uv`，其次 `pip`
+- **包管理**: 必须使用 `uv`，禁止直接使用 `pip`
 - **代码风格**: PEP 8，4 空格缩进，所有函数加类型注解
-- **作者**: `ligen20`，版权年份 `2026`
+- **作者**: `AsuraLG`，版权年份 `2026`
 - 修改任何模块前，先阅读对应目录的 `AGENTS.md`
 - 各模块之间通过 `storage/` 的统一数据格式解耦，不直接互相调用
 
 ### Testing Requirements
-- 添加单元测试前需与用户确认
-- 使用 `pytest`
+- **单元测试是项目质量的基础保障，必须完善**
+- 使用 `pytest`（通过 `uv run pytest` 执行）
+- 覆盖重点：converter、prompt_builder、renderer 等核心逻辑；AI 调用和网络请求需可 mock
 
 ### Common Patterns
 - 配置文件驱动：所有可变参数（信息源、标签、Prompt、调度时间）均在 `config/` 中定义
@@ -70,13 +73,15 @@
 - `scheduler/` 依赖 `collector/` 和 `analyzer/` 的入口函数
 
 ### External
-_待确定。候选依赖：_
 - `feedparser` — RSS 解析
-- `requests` / `httpx` — HTTP 请求
-- `APScheduler` / `schedule` — 定时任务
-- Anthropic / OpenAI SDK — AI 分析
+- `requests` + `beautifulsoup4` — HTTP 请求与页面解析
+- `apscheduler>=3.10,<4` — 定时任务调度
+- `anthropic` — AI 分析（Anthropic 兼容 API）
 - `jinja2` — 静态页面模板渲染
-- `PyGithub` / `ghp-import` — GitHub Pages 发布
+- `mistune>=3.0` — markdown → HTML 转换
+- `ghp-import` — GitHub Pages 推送
+- `pydantic>=2.0` — 配置 schema 校验
+- `pyyaml` — YAML 解析
 
 ## Spec Reference
 完整需求规格见 `.omc/specs/deep-interview-personal-information-aggregation-platform-mvp.md`
