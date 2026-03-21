@@ -1,4 +1,6 @@
-# 调度配置（UTC 时区）
+# 调度配置（默认按北京时间执行）
 
-# 分析发布任务：每天 UTC 10:00 执行（分析前一天的数据并发布）
-analysis_schedule: "0 10 * * *"
+timezone: "Asia/Shanghai"
+
+# 分析发布任务：每天 10:00 执行（按 timezone 解释，分析前一天的数据并发布）
+analysis_schedule: "30 17 * * *"

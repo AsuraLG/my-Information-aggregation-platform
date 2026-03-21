@@ -3,8 +3,10 @@ from __future__ import annotations
 import logging
 import os
 import sys
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Optional
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 import yaml
 from pydantic import BaseModel, field_validator
@@ -58,7 +60,17 @@ class SourcesConfig(BaseModel):
 # ── 调度配置 ────────────────────────────────────────────────
 
 class ScheduleConfig(BaseModel):
+    timezone: str = "Asia/Shanghai"
     analysis_schedule: str  # cron 表达式
+
+    @field_validator("timezone")
+    @classmethod
+    def validate_timezone(cls, v: str) -> str:
+        try:
+            ZoneInfo(v)
+        except ZoneInfoNotFoundError as e:
+            raise ValueError(f"不支持的调度时区: {v}") from e
+        return v
 
 
 # ── Prompt 配置 ─────────────────────────────────────────────
@@ -174,6 +186,21 @@ def load_schedule() -> ScheduleConfig:
     except Exception as e:
         logger.error("schedule.yaml 配置错误: %s", e)
         sys.exit(1)
+
+
+def get_schedule_timezone() -> ZoneInfo:
+    schedule = load_schedule()
+    return ZoneInfo(schedule.timezone)
+
+
+def get_local_today(now: datetime | None = None) -> str:
+    current = now.astimezone(get_schedule_timezone()) if now is not None else datetime.now(get_schedule_timezone())
+    return current.strftime("%Y-%m-%d")
+
+
+def get_local_yesterday(now: datetime | None = None) -> str:
+    current = now.astimezone(get_schedule_timezone()) if now is not None else datetime.now(get_schedule_timezone())
+    return (current - timedelta(days=1)).strftime("%Y-%m-%d")
 
 
 def load_prompts() -> PromptsConfig:

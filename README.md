@@ -4,7 +4,7 @@
 
 ## 功能
 
-- **多源采集**：RSS 订阅 + GitHub Trending，按 cron 表达式定时运行
+- **多源采集**：RSS 订阅 + GitHub Trending，按 cron 表达式为每个信息源独立定时运行
 - **AI 摘要**：支持 Anthropic / OpenAI 兼容 API，按标签聚合生成摘要，并额外生成当日综合 digest，支持 system/user 双提示词
 - **静态发布**：Jinja2 渲染 HTML，通过 `ghp-import` 推送到 `gh-pages` 分支
 - **配置驱动**：信息源、标签、prompt、调度、AI 参数均通过 YAML 配置，代码不硬编码业务参数
@@ -60,7 +60,7 @@ uv run python main.py collect
 # 采集指定信息源
 uv run python main.py collect --source github_trending_python
 
-# 分析（默认昨天）
+# 分析（默认昨天，按 schedule.yaml 中的 timezone 解释）
 uv run python main.py analyze
 
 # 分析指定日期
@@ -96,6 +96,8 @@ ai:
 
 ### 信息源（`config/sources.yaml`）
 
+`sources.yaml` 中每个信息源的 `schedule` 都会注册成一个独立采集 job，只采集该信息源；不同信息源的采集任务与分析/发布任务使用独立执行器，可并行运行。
+
 ```yaml
 sources:
   - id: "github_trending_python"
@@ -104,10 +106,20 @@ sources:
     language: "python"
     period: "daily"
     tags: ["AI", "python", "opensource"]
-    schedule: "0 9 * * *"   # cron，UTC 时区
+    schedule: "0 9 * * *"   # cron，按 config/schedule.yaml 中的 timezone 解释（默认 Asia/Shanghai）
 ```
 
 支持的 `type`：`rss`、`github_trending`
+
+### 调度（`config/schedule.yaml`）
+
+```yaml
+timezone: "Asia/Shanghai"
+analysis_schedule: "0 10 * * *"
+```
+
+- `timezone` 控制 scheduler cron 的解释时区，以及未显式传入 `--date` 时 analyze/publish 默认“昨天”的日期语义。
+- `analysis_schedule` 继续保持配置驱动，仅定义分析/发布任务 cron。
 
 ### 标签（`config/tags.yaml`）
 

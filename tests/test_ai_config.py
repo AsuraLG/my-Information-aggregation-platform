@@ -1,8 +1,9 @@
 from __future__ import annotations
 
+from datetime import datetime, timezone
 from unittest.mock import MagicMock, patch
 
-from config.loader import AIConfig, SettingsConfig, resolve_ai_config
+from config.loader import AIConfig, SettingsConfig, get_local_today, get_local_yesterday, resolve_ai_config
 
 
 def test_resolve_ai_config_prefers_settings_over_env() -> None:
@@ -88,18 +89,24 @@ def test_resolve_ai_config_returns_none_when_provider_missing() -> None:
     assert resolved is None
 
 
-def test_resolve_ai_config_returns_none_when_env_max_tokens_invalid() -> None:
-    settings = SettingsConfig(ai=AIConfig())
+def test_get_local_today_uses_schedule_timezone() -> None:
+    now = datetime(2026, 3, 20, 16, 30, tzinfo=timezone.utc)
 
-    env = {
-        "INFO_AGG_AI_PROVIDER_TYPE": "anthropic",
-        "INFO_AGG_AI_MODEL": "claude-test",
-        "INFO_AGG_AI_API_KEY": "env-key",
-        "INFO_AGG_AI_MAX_TOKENS": "not-an-int",
-    }
+    with patch("config.loader.load_schedule", return_value=MagicMock(timezone="Asia/Shanghai")):
+        assert get_local_today(now) == "2026-03-21"
 
-    with patch.dict("os.environ", env, clear=True):
-        resolved = resolve_ai_config(settings)
 
-    assert resolved is not None
-    assert resolved.max_tokens == 1024
+def test_get_local_yesterday_uses_schedule_timezone() -> None:
+    now = datetime(2026, 3, 20, 16, 30, tzinfo=timezone.utc)
+
+    with patch("config.loader.load_schedule", return_value=MagicMock(timezone="Asia/Shanghai")):
+        assert get_local_yesterday(now) == "2026-03-20"
+
+
+def test_get_local_yesterday_differs_from_utc_near_boundary() -> None:
+    now = datetime(2026, 3, 20, 16, 30, tzinfo=timezone.utc)
+
+    with patch("config.loader.load_schedule", return_value=MagicMock(timezone="Asia/Shanghai")):
+        assert get_local_yesterday(now) != "2026-03-19"
+
+

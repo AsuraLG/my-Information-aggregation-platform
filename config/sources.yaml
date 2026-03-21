@@ -1,5 +1,5 @@
 # 信息源配置
-# 每个信息源需要指定：id、type、标签列表、采集频率（cron 表达式，UTC 时区）
+# 每个信息源需要指定：id、type、标签列表、采集频率（cron 表达式，按 config/schedule.yaml 的 timezone 解释）
 # order: 展示排序，数值越小越靠前，默认 999（可选）
 
 sources:
@@ -8,7 +8,7 @@ sources:
     type: rss
     url: "https://magazine.sebastianraschka.com/feed"
     tags: ["AI"]
-    schedule: "0 9 * * *"  # 每天 UTC 9:00
+    schedule: "0 17 * * *"  # 每天按 schedule.yaml 的 timezone 9:00 执行
     order: 10
 
   - id: "linux_do_top"
@@ -16,7 +16,7 @@ sources:
     type: rss
     url: "https://linuxdorss.longpink.com/top.xml"
     tags: ["AI", "programming"]
-    schedule: "0 9 * * *"  # 每天 UTC 9:00
+    schedule: "0 17 * * *"  # 每天按 schedule.yaml 的 timezone 9:00 执行
     order: 20
 
   - id: "github_trending_python"
@@ -25,7 +25,7 @@ sources:
     language: "python"
     period: "daily"  # daily / weekly / monthly
     tags: ["AI", "python", "opensource"]
-    schedule: "0 9 * * *"  # 每天 UTC 9:00
+    schedule: "0 17 * * *"  # 每天按 schedule.yaml 的 timezone 9:00 执行
     order: 30
 
   - id: "github_trending_java"
@@ -34,7 +34,7 @@ sources:
     language: "java"  # 空字符串表示不限语言
     period: "daily"
     tags: ["java", "opensource"]
-    schedule: "0 9 * * *"
+    schedule: "0 17 * * *"
     order: 40
 
   - id: "xiaoheihe_game_news"
@@ -42,5 +42,5 @@ sources:
     type: rss
     url: "https://rsshub.rss3.workers.dev/xiaoheihe/news"
     tags: ["game"]
-    schedule: "0 */6 * * *"  # 每6小时采集一次
+    schedule: "0 17 * * *"  # 每6小时采集一次
     order: 50

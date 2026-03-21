@@ -1,28 +1,32 @@
 from __future__ import annotations
 
 import logging
-from datetime import datetime, timezone, timedelta
+
+from config.loader import get_local_yesterday, load_sources
 
 logger = logging.getLogger(__name__)
 
 
-def collect_all_job() -> None:
-    """采集所有信息源（由调度器调用）"""
-    from config.loader import load_sources
+def collect_source_job(source_id: str) -> None:
+    """采集单个信息源（由调度器调用）"""
     import collector
     import storage
 
     sources_cfg = load_sources()
-    for src in sources_cfg.sources:
-        try:
-            items = collector.run_collection(src)
-            if items:
-                new_count = storage.convert_and_save(items, src)
-                logger.info("采集完成 [%s]: 新增 %d 条", src.id, new_count)
-            else:
-                logger.warning("采集结果为空 [%s]", src.id)
-        except Exception as e:
-            logger.error("采集异常 [%s]: %s", src.id, e)
+    source = next((src for src in sources_cfg.sources if src.id == source_id), None)
+    if source is None:
+        logger.error("未找到信息源 [%s]，跳过本次采集", source_id)
+        return
+
+    try:
+        items = collector.run_collection(source)
+        if items:
+            new_count = storage.convert_and_save(items, source)
+            logger.info("采集完成 [%s]: 新增 %d 条", source.id, new_count)
+        else:
+            logger.warning("采集结果为空 [%s]", source.id)
+    except Exception as e:
+        logger.error("采集异常 [%s]: %s", source.id, e)
 
 
 def analyze_publish_job() -> None:
@@ -30,7 +34,7 @@ def analyze_publish_job() -> None:
     import analyzer
     import publisher
 
-    date = (datetime.now(timezone.utc) - timedelta(days=1)).strftime("%Y-%m-%d")
+    date = get_local_yesterday()
     logger.info("开始分析发布流程: %s", date)
 
     try:

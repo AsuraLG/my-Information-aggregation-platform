@@ -13,7 +13,7 @@
 | `sources.yaml` | 信息源配置：RSS 订阅列表、GitHub Trending 抓取配置，每个信息源绑定标签规则、采集频率和展示描述（desc）|
 | `tags.yaml` | 标签体系定义：全局统一的标签列表，每个标签含 id（引用标识）和 desc（展示描述）|
 | `prompts.yaml` | AI 分析 Prompt 模板：system + user 双段，可按标签配置不同 Prompt |
-| `schedule.yaml` | 调度配置：分析任务的执行时间/频率（cron 表达式，UTC 时区）|
+| `schedule.yaml` | 调度配置：分析任务的执行时间/频率（cron 表达式，按 `timezone` 字段解释，默认 Asia/Shanghai）|
 | `settings.yaml` | 全局设置（本地，不提交）：存储路径、GitHub Pages 配置、AI 模型参数 |
 | `settings.yaml.example` | settings.yaml 配置模板，提交到 git 供参考 |
 | `loader.py` | 配置加载模块：pydantic v2 校验，load_sources/load_tags/load_settings 等函数 |

@@ -11,7 +11,7 @@
 | File | Description |
 |------|-------------|
 | `__init__.py` | 模块入口，暴露 `start()` 启动调度器 |
-| `jobs.py` | 任务定义：`collect_job()` 和 `analyze_publish_job()`，分别封装采集和分析发布流程 |
+| `jobs.py` | 任务定义：`collect_source_job(source_id)` 和 `analyze_publish_job()`，分别封装单源采集和分析发布流程 |
 | `runner.py` | 调度器主循环：加载配置，注册定时任务，启动并保持运行 |
 
 ## Subdirectories
@@ -30,30 +30,44 @@ _无子目录。_
 ### Testing Requirements
 - **单元测试必须完善**，使用 `pytest`
 - 调度逻辑本身较难单元测试，重点测试 `jobs.py` 中的任务函数
-- 可通过手动触发 `collect_all_job()` / `analyze_publish_job()` 验证端到端流程
+- 可通过手动触发 `collect_source_job()` / `analyze_publish_job()` 验证端到端流程
 
 ### Common Patterns
 调度器启动约定：
 ```python
 # scheduler/runner.py
+from apscheduler.executors.pool import ThreadPoolExecutor
 from apscheduler.schedulers.blocking import BlockingScheduler
-from config import load_schedule_config
-from scheduler.jobs import collect_job, analyze_publish_job
+from zoneinfo import ZoneInfo
+
+from config.loader import load_schedule, load_sources
+from scheduler.jobs import collect_source_job, analyze_publish_job
 
 def start():
-    config = load_schedule_config()
-    scheduler = BlockingScheduler(timezone="UTC")  # 必须显式设置，避免系统本地时区影响 cron 触发时间
+    schedule = load_schedule()
+    sources = load_sources()
+    scheduler = BlockingScheduler(
+        timezone=ZoneInfo(schedule.timezone),
+        executors={
+            "collect": ThreadPoolExecutor(max_workers=4),
+            "analyze_publish": ThreadPoolExecutor(max_workers=1),
+        },
+    )  # 按 schedule.yaml 的 timezone 解释 cron，并隔离采集/分析发布执行器
 
-    for source in config.sources:
+    for source in sources.sources:
         scheduler.add_job(
-            collect_job, 'cron',
+            collect_source_job, 'cron',
             args=[source.id],
+            executor="collect",
+            max_instances=1,
             **parse_cron(source.schedule)
         )
 
     scheduler.add_job(
         analyze_publish_job, 'cron',
-        **parse_cron(config.analysis_schedule)
+        executor="analyze_publish",
+        max_instances=1,
+        **parse_cron(schedule.analysis_schedule)
     )
 
     scheduler.start()

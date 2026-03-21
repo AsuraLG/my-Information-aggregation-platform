@@ -3,7 +3,6 @@ from __future__ import annotations
 import argparse
 import logging
 import sys
-from datetime import datetime, timezone
 
 # 统一日志配置
 logging.basicConfig(
@@ -15,13 +14,16 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-def _today_utc() -> str:
-    return datetime.now(timezone.utc).strftime("%Y-%m-%d")
+def _today_local() -> str:
+    from config.loader import get_local_today
+
+    return get_local_today()
 
 
-def _yesterday_utc() -> str:
-    from datetime import timedelta
-    return (datetime.now(timezone.utc) - timedelta(days=1)).strftime("%Y-%m-%d")
+def _yesterday_local() -> str:
+    from config.loader import get_local_yesterday
+
+    return get_local_yesterday()
 
 
 def cmd_collect(source_id: str | None = None) -> None:
@@ -52,7 +54,7 @@ def cmd_analyze(date: str | None = None) -> None:
     """手动触发分析"""
     import analyzer
 
-    target_date = date or _yesterday_utc()
+    target_date = date or _yesterday_local()
     logger.info("开始分析: %s", target_date)
     results = analyzer.run_analysis(target_date)
     logger.info("分析完成，共生成 %d 条摘要", len(results))
@@ -62,7 +64,7 @@ def cmd_publish(date: str | None = None) -> None:
     """手动触发发布"""
     import publisher
 
-    target_date = date or _yesterday_utc()
+    target_date = date or _yesterday_local()
     logger.info("开始发布: %s", target_date)
     output_path = publisher.render(target_date)
     logger.info("渲染完成: %s", output_path)
