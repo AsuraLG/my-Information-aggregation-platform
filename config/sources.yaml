@@ -1,33 +1,46 @@
 # 信息源配置
 # 每个信息源需要指定：id、type、标签列表、采集频率（cron 表达式，UTC 时区）
+# order: 展示排序，数值越小越靠前，默认 999（可选）
 
 sources:
-  - id: "hacker_news"
-    desc: "Hacker News"
+  - id: "sebastian_raschka"
+    desc: "Sebastian Raschka的AI洞察"
     type: rss
-    url: "https://news.ycombinator.com/rss"
-    tags: ["tech", "programming"]
-    schedule: "0 */6 * * *"  # 每6小时采集一次
+    url: "https://magazine.sebastianraschka.com/feed"
+    tags: ["AI"]
+    schedule: "0 9 * * *"  # 每天 UTC 9:00
+    order: 10
 
-  - id: "python_blog"
-    desc: "Python 官方博客"
+  - id: "linux_do_top"
+    desc: "LINUX DO 热门话题"
     type: rss
-    url: "https://feeds.feedburner.com/PythonInsider"
-    tags: ["python", "programming"]
-    schedule: "0 8 * * *"  # 每天 UTC 8:00
+    url: "https://linuxdorss.longpink.com/top.xml"
+    tags: ["AI", "programming"]
+    schedule: "0 9 * * *"  # 每天 UTC 9:00
+    order: 20
 
   - id: "github_trending_python"
     desc: "GitHub Trending · Python"
     type: github_trending
     language: "python"
     period: "daily"  # daily / weekly / monthly
-    tags: ["python", "opensource"]
+    tags: ["AI", "python", "opensource"]
     schedule: "0 9 * * *"  # 每天 UTC 9:00
+    order: 30
 
   - id: "github_trending_java"
-    desc: "GitHub Trending · 全语言"
+    desc: "GitHub Trending · Java"
     type: github_trending
-    language: ""  # 空字符串表示不限语言
+    language: "java"  # 空字符串表示不限语言
     period: "daily"
-    tags: ["tech", "opensource"]
+    tags: ["java", "opensource"]
     schedule: "0 9 * * *"
+    order: 40
+
+  - id: "xiaoheihe_game_news"
+    desc: "小黑盒游戏资讯"
+    type: rss
+    url: "rsshub://xiaoheihe/news"
+    tags: ["game"]
+    schedule: "0 */6 * * *"  # 每6小时采集一次
+    order: 50

@@ -3,12 +3,15 @@ from __future__ import annotations
 import json
 import logging
 import os
+import re
 from datetime import datetime, timezone
 from pathlib import Path
 
-from storage.models import UnifiedItem, SummaryResult
+from storage.models import UnifiedItem, SummaryResult, DigestResult
 
 logger = logging.getLogger(__name__)
+
+_DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 
 
 def _data_dir() -> Path:
@@ -23,6 +26,10 @@ def _items_path(date: str) -> Path:
 
 def _summaries_path(date: str) -> Path:
     return _data_dir() / "summaries" / f"{date}.json"
+
+
+def _digest_path(date: str) -> Path:
+    return _data_dir() / "digest" / f"{date}.json"
 
 
 def _atomic_write(path: Path, content: str) -> None:
@@ -108,3 +115,44 @@ def load_summaries(date: str) -> list[SummaryResult]:
     except Exception as e:
         logger.error("读取 summaries 失败 [%s]: %s", date, e)
         return []
+
+
+def list_available_dates() -> list[str]:
+    """扫描 data/summaries/ 目录下的 JSON 文件名，返回降序排列的日期列表。
+
+    文件名格式为 YYYY-MM-DD.json，提取日期部分并排序。
+    忽略非 .json 文件和文件名不匹配日期格式的文件。
+    """
+    summaries_dir = _data_dir() / "summaries"
+    if not summaries_dir.exists():
+        return []
+    dates = [
+        f.stem for f in summaries_dir.iterdir()
+        if f.is_file() and f.suffix == ".json" and _DATE_RE.match(f.stem)
+    ]
+    return sorted(dates, reverse=True)
+
+
+def save_digest(result: DigestResult) -> None:
+    """将 DigestResult 写入 data/digest/{date}.json（原子写入）"""
+    path = _digest_path(result.date)
+    content = json.dumps(
+        json.loads(result.model_dump_json()),
+        ensure_ascii=False,
+        indent=2,
+    )
+    _atomic_write(path, content)
+    logger.info("日报摘要存储完成 [%s]", result.date)
+
+
+def load_digest(date: str) -> DigestResult | None:
+    """读取指定日期的 DigestResult，不存在时返回 None"""
+    path = _digest_path(date)
+    if not path.exists():
+        return None
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+        return DigestResult(**data)
+    except Exception as e:
+        logger.error("读取 digest 失败 [%s]: %s", date, e)
+        return None

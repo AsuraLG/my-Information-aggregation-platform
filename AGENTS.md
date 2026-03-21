@@ -3,7 +3,7 @@
 # my-Information-aggregation-platform
 
 ## Purpose
-个人使用的信息聚合工具，支持本地或单机服务器部署。核心流程：定时采集 RSS 与 GitHub Trending 信息 → 转换为统一格式落库 → 按标签和信息源维度执行 AI 摘要分析 → 生成静态页面发布到 GitHub Pages。
+个人使用的信息聚合工具，支持本地或单机服务器部署。核心流程：定时采集 RSS 与 GitHub Trending 信息 → 转换为统一格式落库 → 按标签维度执行 AI 摘要分析并生成当日综合 digest → 生成静态页面发布到 GitHub Pages。
 
 整个系统以配置文件驱动，无 Web 管理后台，目标是稳定跑通完整闭环，无需人工干预。
 
@@ -26,7 +26,7 @@
 | `config/` | 配置文件目录：信息源、标签规则、Prompt、调度配置（见 `config/AGENTS.md`） |
 | `collector/` | 采集模块：RSS 与 GitHub Trending 数据抓取（见 `collector/AGENTS.md`） |
 | `storage/` | 存储模块：统一格式数据结构定义与本地持久化（见 `storage/AGENTS.md`） |
-| `analyzer/` | 分析模块：AI 摘要分析，按标签和信息源维度输出（见 `analyzer/AGENTS.md`） |
+| `analyzer/` | 分析模块：按标签聚合生成 AI 摘要，并进一步产出当日综合 digest（见 `analyzer/AGENTS.md`） |
 | `publisher/` | 发布模块：静态页面生成与 GitHub Pages 自动发布（见 `publisher/AGENTS.md`） |
 | `scheduler/` | 调度模块：定时任务管理，驱动采集与分析的执行节奏（见 `scheduler/AGENTS.md`） |
 

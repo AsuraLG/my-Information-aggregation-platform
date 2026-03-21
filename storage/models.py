@@ -1,9 +1,8 @@
 from __future__ import annotations
 
 from datetime import datetime, timezone
-from typing import Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class UnifiedItem(BaseModel):
@@ -22,7 +21,15 @@ class SummaryResult(BaseModel):
     """AI 分析摘要结果"""
     date: str                    # YYYY-MM-DD（UTC）
     tag: str                     # 按标签维度
-    source_id: Optional[str]     # 按信息源维度（None 表示跨源汇总）
     summary: str                 # AI 生成的摘要内容
     item_count: int              # 本次分析的条目数
-    generated_at: datetime       # UTC 时间
+    source_ids: list[str] = Field(default_factory=list)  # 覆盖的信息源 id 列表
+    source_count: int = 0        # 覆盖的信息源数量
+    generated_at: datetime       # UTC 时间戳
+
+
+class DigestResult(BaseModel):
+    """AI 生成的当日综合摘要（日报 TL;DR）"""
+    date: str                    # YYYY-MM-DD
+    digest: str                  # AI 生成的综合摘要文本（markdown）
+    generated_at: datetime       # UTC 时间戳

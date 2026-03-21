@@ -1,5 +1,5 @@
 <!-- Parent: ../AGENTS.md -->
-<!-- Generated: 2026-03-19 | Updated: 2026-03-20 -->
+<!-- Generated: 2026-03-19 | Updated: 2026-03-20 (v1.2) -->
 
 # publisher
 
@@ -24,9 +24,11 @@
 ## For AI Agents
 
 ### Working In This Directory
-- `render(date)` 生成指定日期的 HTML 页面，返回输出路径；`deploy()` 推送到 GitHub Pages
-- 渲染时从 `config/tags.yaml` 和 `config/sources.yaml` 加载 id→desc 映射，展示时用 desc 替代 id
+- `render(date)` **全量重建**所有历史日期页面 + 首页，返回本次 date 对应的页面路径；`deploy()` 推送到 GitHub Pages
+- 每次 render 遍历 `data/summaries/*.json` 发现所有历史日期，逐一渲染到 `output/{date}/index.html`，同时生成 `output/index.html` 首页
+- 渲染时从 `config/tags.yaml` 和 `config/sources.yaml` 加载 id→desc/order 映射，按 `order` 字段升序排列 tag 和 source
 - AI 摘要为 markdown 格式，渲染时通过 `mistune.create_markdown(escape=True)` 转为 HTML
+- 生成时间使用 CST（Asia/Shanghai）时区，格式 `YYYY-MM-DD HH:MM CST`
 - 生成的静态文件输出到 `output/` 目录（已加入 `.gitignore`），再由 `deployer.py` 推送
 - GitHub Pages 目标仓库和分支在 `config/settings.yaml` 中配置
 - 部署失败时记录日志，不影响本地文件生成
@@ -47,7 +49,8 @@ def deploy() -> bool: ...
 模板目录结构：
 ```
 templates/
-└── index.html         # 首页（当日摘要，按标签分组展示）
+├── index.html         # 日期页面（output/{date}/index.html）：摘要内容 + 前后日期导航
+└── home.html          # 首页（output/index.html）：最新摘要内容 + 历史日期列表导航
 ```
 
 ## Dependencies

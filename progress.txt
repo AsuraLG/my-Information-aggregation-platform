@@ -1,0 +1,9 @@
+# Ralph progress
+
+- Initialized PRD for tag-only aggregation refactor.
+- Stories cover: data model + summarizer, prompt rewrite, renderer/template redesign, tests.
+- Implemented tag-only summary model in storage/models.py with source_ids/source_count for lightweight provenance display.
+- Switched analyzer/summarizer.py from (tag, source_id) grouping to tag-only aggregation and updated digest input to consume tag-level summaries.
+- Rewrote analyzer/prompt_builder.py and config/prompts.yaml for multi-source integration, deduplication, and merged-summary framing.
+- Refactored publisher/renderer.py plus publisher/templates/index.html and publisher/templates/home.html to render single-layer tag cards and rename the digest block to “今日摘要”.
+- Refreshed renderer/digest tests for tag-only behavior and verified with uv run pytest (23 passed).

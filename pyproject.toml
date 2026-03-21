@@ -25,3 +25,8 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["collector", "storage", "analyzer", "publisher", "scheduler", "config"]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.4.2",
+]

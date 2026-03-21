@@ -5,7 +5,7 @@
 ## 功能
 
 - **多源采集**：RSS 订阅 + GitHub Trending，按 cron 表达式定时运行
-- **AI 摘要**：调用 Anthropic 兼容 API，按标签使用不同 prompt 模板，支持 system/user 双提示词
+- **AI 摘要**：调用 Anthropic 兼容 API，按标签聚合生成摘要，并额外生成当日综合 digest，支持 system/user 双提示词
 - **静态发布**：Jinja2 渲染 HTML，通过 `ghp-import` 推送到 `gh-pages` 分支
 - **配置驱动**：信息源、标签、prompt、调度、AI 参数均通过 YAML 配置，代码不硬编码业务参数
 
@@ -56,7 +56,7 @@ export INFO_AGG_AI_BASE_URL="https://..."   # 可选，自定义端点/代理
 uv run python main.py collect
 
 # 采集指定信息源
-uv run python main.py collect --source hacker_news
+uv run python main.py collect --source github_trending_python
 
 # 分析（默认昨天）
 uv run python main.py analyze
@@ -83,12 +83,13 @@ uv run python main.py run
 
 ```yaml
 sources:
-  - id: "hacker_news"
-    desc: "Hacker News"        # 页面展示名称
-    type: rss
-    url: "https://news.ycombinator.com/rss"
-    tags: ["tech", "programming"]
-    schedule: "0 */6 * * *"   # cron，UTC 时区
+  - id: "github_trending_python"
+    desc: "GitHub Trending · Python"   # 页面展示名称
+    type: github_trending
+    language: "python"
+    period: "daily"
+    tags: ["AI", "python", "opensource"]
+    schedule: "0 9 * * *"   # cron，UTC 时区
 ```
 
 支持的 `type`：`rss`、`github_trending`
@@ -97,20 +98,24 @@ sources:
 
 ```yaml
 tags:
-  - id: "tech"
-    desc: "科技资讯"    # 页面展示名称
+  - id: "AI"
+    desc: "人工智能"    # 页面展示名称
 ```
 
 `sources.yaml` 中的 `tags` 字段引用 `id`，页面渲染时自动替换为 `desc`。
 
 ### AI Prompt（`config/prompts.yaml`）
 
-支持按标签配置不同 prompt，未匹配的标签使用 `default`：
+支持按标签配置不同 prompt，未匹配的标签使用 `default`；此外还支持单独的 `digest` 模板用于生成当日综合摘要：
 
 ```yaml
 default:
   system: "你是一个信息摘要助手..."
-  user: "以下是 {date} 来自「{source_id}」的内容：\n\n{items_text}"
+  user: "以下是 {date} 标签「{tag}」下的原始信息，共覆盖 {source_count} 个来源、{item_count} 条原始信息。\n来源包括：{source_ids_text}\n\n{items_text}"
+
+digest:
+  system: "你是一个信息聚合助手..."
+  user: "以下是 {date} 的各标签整合摘要：\n\n{summaries_text}"
 
 tags:
   python:
@@ -118,7 +123,7 @@ tags:
     user: "..."
 ```
 
-可用变量：`{date}`、`{tag}`、`{source_id}`、`{items_text}`
+可用变量：`{date}`、`{tag}`、`{items_text}`、`{source_ids_text}`、`{source_count}`、`{item_count}`；`digest` 模板额外使用 `{summaries_text}`。
 
 ## GitHub Pages 部署
 

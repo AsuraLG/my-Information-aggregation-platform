@@ -1,0 +1,47 @@
+{
+  "stories": [
+    {
+      "id": "US-001",
+      "title": "切换摘要数据模型与分析粒度到 tag-only",
+      "passes": true,
+      "acceptanceCriteria": [
+        "analyzer/summarizer.py 不再按 (tag, source_id) 分组，而是按 tag 分组生成摘要",
+        "每条新的 SummaryResult 记录 tag 级摘要，并包含来源集合或来源计数以支持轻量来源说明",
+        "Digest 生成输入从 tag×source 摘要切换为 tag 级摘要组织方式",
+        "对应存储读写逻辑能够正确序列化和反序列化新的 SummaryResult 字段"
+      ]
+    },
+    {
+      "id": "US-002",
+      "title": "重写 prompt 以支持多来源去重归并和整合表达",
+      "passes": true,
+      "acceptanceCriteria": [
+        "config/prompts.yaml 保留原有输出约束骨架，但角色定义明确为多来源信息整合分析",
+        "prompt user 模板不再要求 source_id 单来源语义，而是支持 tag 级多来源输入",
+        "analyzer/prompt_builder.py 可为 tag-only 摘要生成正确 prompt，不出现旧的单来源文案"
+      ]
+    },
+    {
+      "id": "US-003",
+      "title": "将渲染结构与页面改为 tag-only 并完成中度美化",
+      "passes": true,
+      "acceptanceCriteria": [
+        "publisher/renderer.py 输出 tag-only 模板上下文，不再要求 group.sources 二级结构",
+        "publisher/templates/index.html 和 publisher/templates/home.html 将“今日 TL;DR”改为“今日摘要”",
+        "页面按标签展示单层摘要卡片，并显示轻量来源说明与原始信息条数",
+        "主页和日期页样式完成中度视觉升级，仍保持静态 HTML 和轻量实现"
+      ]
+    },
+    {
+      "id": "US-004",
+      "title": "补充并更新测试验证新摘要与渲染链路",
+      "passes": true,
+      "acceptanceCriteria": [
+        "新增或更新测试覆盖 tag-only summarizer 行为",
+        "新增或更新测试覆盖 prompt_builder 或 prompts 适配行为",
+        "新增或更新测试覆盖 renderer/template 的 tag-only 输出与关键页面文案",
+        "执行 uv run pytest 时相关测试通过"
+      ]
+    }
+  ]
+}

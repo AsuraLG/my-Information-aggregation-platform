@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{{ site_title }} · {{ date }}</title>
+  <title>{{ site_title }}</title>
   <style>
     :root {
       color-scheme: light;
@@ -75,31 +75,45 @@
       color: var(--muted);
       font-size: .84rem;
     }
-    .date-nav {
+    .date-list {
+      background: rgba(255,255,255,0.72);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow);
+      padding: 20px 22px;
+      margin-bottom: 24px;
+      backdrop-filter: blur(8px);
+    }
+    .date-list h2 {
+      font-size: 1rem;
+      color: #0f172a;
+      margin: 0 0 14px;
+    }
+    .date-list ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
       display: flex;
       flex-wrap: wrap;
       gap: 10px;
-      align-items: center;
-      margin-bottom: 22px;
     }
-    .date-nav a, .date-nav .current {
+    .date-list li a {
       display: inline-flex;
       align-items: center;
-      justify-content: center;
-      min-height: 40px;
+      gap: 6px;
+      min-height: 38px;
       padding: 0 14px;
       border-radius: 999px;
       border: 1px solid var(--border);
-      background: rgba(255,255,255,0.72);
+      background: var(--surface-strong);
       color: var(--text);
       text-decoration: none;
-      font-size: .9rem;
+      font-size: .88rem;
     }
-    .date-nav a:hover { border-color: rgba(37, 99, 235, 0.35); color: var(--primary); }
-    .date-nav .current {
-      background: linear-gradient(135deg, var(--primary-soft), var(--accent-soft));
+    .date-list li a:hover { border-color: rgba(37, 99, 235, 0.35); color: var(--primary); }
+    .date-list .latest {
+      font-size: .74rem;
       color: var(--primary);
-      font-weight: 600;
     }
     .digest-block {
       background: linear-gradient(135deg, rgba(37, 99, 235, 0.14), rgba(124, 58, 237, 0.12));
@@ -204,12 +218,18 @@
       </div>
     </section>
 
-    <nav class="date-nav">
-      {% if prev_date %}<a href="../{{ prev_date }}/index.html">&larr; {{ prev_date }}</a>{% endif %}
-      <span class="current">{{ date }}</span>
-      {% if next_date %}<a href="../{{ next_date }}/index.html">{{ next_date }} &rarr;</a>{% endif %}
-      <a href="../index.html">首页</a>
+    {% if dates %}
+    <nav class="date-list">
+      <h2>历史归档</h2>
+      <ul>
+        {% for d in dates %}
+        <li>
+          <a href="./{{ d }}/index.html">{{ d }}{% if loop.first %}<span class="latest">最新</span>{% endif %}</a>
+        </li>
+        {% endfor %}
+      </ul>
     </nav>
+    {% endif %}
 
     {% if digest_html %}
     <section class="digest-block">

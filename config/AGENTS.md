@@ -31,7 +31,7 @@ _无子目录。_
 - 标签在 `tags.yaml` 中统一定义（id + desc），`sources.yaml` 中只引用 id，不能随意新增
 - 新增标签时先在 `tags.yaml` 中定义，再在 `sources.yaml` 中引用；`validate_tags()` 会在启动时做交叉校验
 - AI 配置优先级：`settings.yaml` > 环境变量（`INFO_AGG_AI_*` 前缀）
-- Prompt 模板支持变量插值：`{date}`、`{tag}`、`{source_id}`、`{items_text}`
+- Prompt 模板支持变量插值：`{date}`、`{tag}`、`{items_text}`、`{source_ids_text}`、`{source_count}`、`{item_count}`；digest 模板使用 `{summaries_text}`
 
 ### Testing Requirements
 - 配置文件变更后，运行 `uv run python main.py` 验证配置加载和 `validate_tags()` 校验通过
@@ -41,18 +41,18 @@ _无子目录。_
 配置文件示例结构（`sources.yaml`）：
 ```yaml
 sources:
-  - id: "hacker_news"
+  - id: "sebastian_raschka"
     type: rss
-    url: "https://news.ycombinator.com/rss"
-    tags: ["tech", "programming"]
-    schedule: "0 */6 * * *"  # 每6小时
+    url: "https://magazine.sebastianraschka.com/feed"
+    tags: ["AI"]
+    schedule: "0 9 * * *"
 
   - id: "github_trending_python"
     type: github_trending
     language: "python"
     period: "daily"
-    tags: ["python", "opensource"]
-    schedule: "0 8 * * *"  # 每天8点
+    tags: ["AI", "python", "opensource"]
+    schedule: "0 9 * * *"
 ```
 
 ## Dependencies

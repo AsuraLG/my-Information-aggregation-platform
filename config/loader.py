@@ -18,6 +18,7 @@ CONFIG_DIR = Path(__file__).parent
 class TagConfig(BaseModel):
     id: str
     desc: str
+    order: int = 999  # 展示排序，数值越小越靠前
 
 
 class TagsConfig(BaseModel):
@@ -32,6 +33,7 @@ class SourceConfig(BaseModel):
     tags: list[str]
     schedule: str  # cron 表达式
     desc: str = ""  # 展示用描述，为空时回退到 id
+    order: int = 999  # 展示排序，数值越小越靠前
 
     # RSS 专用
     url: Optional[str] = None
@@ -68,6 +70,10 @@ class PromptTemplate(BaseModel):
 class PromptsConfig(BaseModel):
     default: PromptTemplate
     tags: dict[str, PromptTemplate] = {}
+    digest: PromptTemplate = PromptTemplate(
+        system="你是一个信息聚合助手。请根据以下各标签的整合摘要，生成一段简洁的今日综合摘要（100-200字），概括今天最值得关注的内容，语言简洁，适合快速浏览。",
+        user="日期：{date}\n\n以下是今日各标签的整合摘要：\n{summaries_text}\n\n请生成今日综合摘要：",
+    )
 
 
 # ── AI 配置 ─────────────────────────────────────────────────

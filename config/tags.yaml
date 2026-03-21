@@ -1,22 +1,29 @@
 # 标签配置
 # id: 在 sources.yaml 中引用的唯一标识符
 # desc: 展示时使用的中文描述
+# order: 展示排序，数值越小越靠前，默认 999（可选）
 
 tags:
-  - id: "tech"
-    desc: "科技资讯"
+  - id: "AI"
+    desc: "人工智能"
+    order: 10
 
   - id: "python"
     desc: "Python技术"
+    order: 20
 
   - id: "java"
     desc: "Java技术"
+    order: 30
 
   - id: "programming"
     desc: "编程开发"
+    order: 40
 
   - id: "opensource"
     desc: "开源项目"
+    order: 50
 
-  - id: "AI"
-    desc: "人工智能"
+  - id: "game"
+    desc: "游戏资讯"
+    order: 60
