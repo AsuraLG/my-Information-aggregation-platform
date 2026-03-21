@@ -30,7 +30,7 @@ _无子目录。_
 - `sources.yaml` 中每个信息源必须包含：类型（rss/github_trending）、标识符、标签 id 列表、采集频率、展示描述（desc）
 - 标签在 `tags.yaml` 中统一定义（id + desc），`sources.yaml` 中只引用 id，不能随意新增
 - 新增标签时先在 `tags.yaml` 中定义，再在 `sources.yaml` 中引用；`validate_tags()` 会在启动时做交叉校验
-- AI 配置优先级：`settings.yaml` > 环境变量（`INFO_AGG_AI_*` 前缀）
+- AI 配置优先级：`settings.yaml` > 环境变量（`INFO_AGG_AI_*` 前缀），其中 `provider_type` 为必填，可选 `anthropic` / `openai`
 - Prompt 模板支持变量插值：`{date}`、`{tag}`、`{items_text}`、`{source_ids_text}`、`{source_count}`、`{item_count}`；digest 模板使用 `{summaries_text}`
 
 ### Testing Requirements

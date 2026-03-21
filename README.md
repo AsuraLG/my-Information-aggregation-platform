@@ -5,7 +5,7 @@
 ## 功能
 
 - **多源采集**：RSS 订阅 + GitHub Trending，按 cron 表达式定时运行
-- **AI 摘要**：调用 Anthropic 兼容 API，按标签聚合生成摘要，并额外生成当日综合 digest，支持 system/user 双提示词
+- **AI 摘要**：支持 Anthropic / OpenAI 兼容 API，按标签聚合生成摘要，并额外生成当日综合 digest，支持 system/user 双提示词
 - **静态发布**：Jinja2 渲染 HTML，通过 `ghp-import` 推送到 `gh-pages` 分支
 - **配置驱动**：信息源、标签、prompt、调度、AI 参数均通过 YAML 配置，代码不硬编码业务参数
 
@@ -44,9 +44,11 @@ cp config/settings.yaml.example config/settings.yaml
 编辑 `config/settings.yaml`，填写 AI 配置。也可以通过环境变量（优先级低于配置文件）：
 
 ```bash
+export INFO_AGG_AI_PROVIDER_TYPE="anthropic"   # 必填，可选 anthropic / openai
 export INFO_AGG_AI_MODEL="claude-3-5-haiku-20241022"
 export INFO_AGG_AI_API_KEY="sk-..."
-export INFO_AGG_AI_BASE_URL="https://..."   # 可选，自定义端点/代理
+export INFO_AGG_AI_BASE_URL="https://..."     # 可选，自定义端点/代理
+export INFO_AGG_AI_MAX_TOKENS="1024"          # 可选
 ```
 
 ### 3. 手动运行
@@ -78,6 +80,19 @@ uv run python main.py run
 ```
 
 ## 配置说明
+
+### AI 配置（`config/settings.yaml`）
+
+`ai.provider_type` 为必填项，可选：`anthropic`、`openai`。配置优先级为：`settings.yaml` > `INFO_AGG_AI_*` 环境变量。
+
+```yaml
+ai:
+  provider_type: "anthropic"
+  model: "claude-3-5-haiku-20241022"
+  max_tokens: 1024
+  api_key: "sk-..."
+  base_url: "https://..."  # 可选
+```
 
 ### 信息源（`config/sources.yaml`）
 
@@ -135,4 +150,4 @@ tags:
 
 - Python 3.9.6
 - 包管理：[uv](https://docs.astral.sh/uv/)
-- 主要依赖：`anthropic`、`feedparser`、`apscheduler`、`jinja2`、`mistune`、`ghp-import`
+- 主要依赖：`anthropic`、`openai`、`feedparser`、`apscheduler`、`jinja2`、`mistune`、`ghp-import`

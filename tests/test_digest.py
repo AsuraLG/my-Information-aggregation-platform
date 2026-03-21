@@ -227,6 +227,7 @@ def test_run_analysis_groups_items_by_tag_only():
     from analyzer.summarizer import run_analysis
 
     settings = MagicMock()
+    settings.ai.provider_type = "anthropic"
     settings.ai.model = "test-model"
     settings.ai.api_key = "test-key"
     settings.ai.base_url = None

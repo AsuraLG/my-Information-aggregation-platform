@@ -4,10 +4,14 @@ import logging
 from typing import Any
 
 import feedparser
+import requests
 
 from collector.base import BaseCollector, RawItem
 
 logger = logging.getLogger(__name__)
+
+_TIMEOUT = 15
+_USER_AGENT = "Mozilla/5.0 (compatible; info-aggregator/1.0)"
 
 
 class RSSCollector(BaseCollector):
@@ -19,7 +23,24 @@ class RSSCollector(BaseCollector):
 
     def fetch(self) -> list[RawItem]:
         try:
-            feed = feedparser.parse(self.url)
+            response = requests.get(
+                self.url,
+                timeout=_TIMEOUT,
+                headers={"User-Agent": _USER_AGENT},
+            )
+            response.raise_for_status()
+        except Exception as e:
+            logger.warning("RSS 请求失败 [%s]: %s", self.source_id, e)
+            return []
+
+        content_type = response.headers.get("Content-Type", "")
+        text = response.text.lstrip()
+        if "html" in content_type.lower() or text.startswith("<!DOCTYPE html") or text.startswith("<html"):
+            logger.warning("RSS 返回非 feed 内容 [%s]: content_type=%s", self.source_id, content_type or "unknown")
+            return []
+
+        try:
+            feed = feedparser.parse(response.text)
             if feed.bozo and not feed.entries:
                 logger.warning("RSS 解析异常 [%s]: %s", self.source_id, feed.bozo_exception)
                 return []

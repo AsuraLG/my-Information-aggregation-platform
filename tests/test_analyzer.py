@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from unittest.mock import MagicMock, patch
 
-from config.loader import PromptTemplate, PromptsConfig
+from config.loader import PromptTemplate, PromptsConfig, ResolvedAIConfig
 from storage.models import UnifiedItem
 
 
@@ -73,6 +73,7 @@ def test_run_analysis_groups_by_tag_and_keeps_source_aggregation() -> None:
 
     prompts_cfg = _make_prompts_cfg()
     settings = MagicMock()
+    settings.ai.provider_type = "anthropic"
     settings.ai.model = "test-model"
     settings.ai.api_key = "test-key"
     settings.ai.base_url = None
@@ -124,3 +125,48 @@ def test_run_analysis_groups_by_tag_and_keeps_source_aggregation() -> None:
     assert "来源数=2" in first_prompt or "来源数=2" in second_prompt
     assert "【AI】" in digest_prompt
     assert "【python】" in digest_prompt
+
+
+def test_run_analysis_passes_openai_provider_to_call_ai() -> None:
+    from analyzer.summarizer import run_analysis
+
+    prompts_cfg = _make_prompts_cfg()
+    settings = MagicMock()
+    items = [_make_item("1", "src_a", ["AI"], title="A1")]
+    resolved_ai_config = ResolvedAIConfig(
+        provider_type="openai",
+        model="gpt-5.4",
+        max_tokens=512,
+        api_key="test-key",
+        base_url="https://example.com/v1",
+    )
+
+    with patch("analyzer.summarizer.load_settings", return_value=settings), \
+         patch("analyzer.summarizer.load_prompts", return_value=prompts_cfg), \
+         patch("analyzer.summarizer.resolve_ai_config", return_value=resolved_ai_config), \
+         patch("analyzer.summarizer.load_items", return_value=items), \
+         patch("analyzer.summarizer.call_ai", side_effect=["AI摘要", "日报摘要"]) as mock_call_ai, \
+         patch("analyzer.summarizer.save_summaries"), \
+         patch("analyzer.summarizer.save_digest"):
+        results = run_analysis("2026-03-21")
+
+    assert len(results) == 1
+    assert mock_call_ai.call_count == 2
+    assert mock_call_ai.call_args_list[0].kwargs["provider_type"] == "openai"
+    assert mock_call_ai.call_args_list[1].kwargs["provider_type"] == "openai"
+
+
+def test_run_analysis_returns_empty_when_provider_type_missing() -> None:
+    from analyzer.summarizer import run_analysis
+
+    settings = MagicMock()
+    prompts_cfg = _make_prompts_cfg()
+
+    with patch("analyzer.summarizer.load_settings", return_value=settings), \
+         patch("analyzer.summarizer.load_prompts", return_value=prompts_cfg), \
+         patch("analyzer.summarizer.resolve_ai_config", return_value=None), \
+         patch("analyzer.summarizer.load_items") as mock_load_items:
+        results = run_analysis("2026-03-21")
+
+    assert results == []
+    mock_load_items.assert_not_called()

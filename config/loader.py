@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import os
 import sys
 from pathlib import Path
 from typing import Optional
@@ -79,10 +80,28 @@ class PromptsConfig(BaseModel):
 # ── AI 配置 ─────────────────────────────────────────────────
 
 class AIConfig(BaseModel):
-    model: Optional[str] = None     # 优先使用；为 None 时回退到 INFO_AGG_AI_MODEL 环境变量，最终默认 claude-3-5-haiku-20241022
+    provider_type: Optional[str] = None
+    model: Optional[str] = None
     max_tokens: int = 1024
-    api_key: Optional[str] = None   # 优先使用；为 None 时回退到 INFO_AGG_AI_API_KEY 环境变量
-    base_url: Optional[str] = None  # 优先使用；为 None 时回退到 INFO_AGG_AI_BASE_URL 环境变量
+    api_key: Optional[str] = None
+    base_url: Optional[str] = None
+
+    @field_validator("provider_type")
+    @classmethod
+    def validate_provider_type(cls, v: Optional[str]) -> Optional[str]:
+        if v is None:
+            return None
+        if v not in ("anthropic", "openai"):
+            raise ValueError(f"不支持的 AI provider_type: {v}，仅支持 anthropic / openai")
+        return v
+
+
+class ResolvedAIConfig(BaseModel):
+    provider_type: str
+    model: str
+    max_tokens: int
+    api_key: str
+    base_url: Optional[str] = None
 
 
 # ── 存储配置 ────────────────────────────────────────────────
@@ -171,3 +190,48 @@ def load_settings() -> SettingsConfig:
     except Exception as e:
         logger.error("settings.yaml 配置错误: %s", e)
         sys.exit(1)
+
+
+def _get_env_int(name: str) -> int | None:
+    value = os.environ.get(name)
+    if value is None or value == "":
+        return None
+    try:
+        return int(value)
+    except ValueError:
+        logger.error("环境变量 %s 必须是整数，当前值: %s", name, value)
+        return None
+
+
+def resolve_ai_config(settings: SettingsConfig) -> ResolvedAIConfig | None:
+    provider_type = settings.ai.provider_type or os.environ.get("INFO_AGG_AI_PROVIDER_TYPE") or None
+    model = settings.ai.model or os.environ.get("INFO_AGG_AI_MODEL") or None
+    api_key = settings.ai.api_key or os.environ.get("INFO_AGG_AI_API_KEY") or None
+    base_url = settings.ai.base_url or os.environ.get("INFO_AGG_AI_BASE_URL") or None
+    max_tokens = settings.ai.max_tokens
+    env_max_tokens = _get_env_int("INFO_AGG_AI_MAX_TOKENS")
+    if settings.ai.max_tokens == AIConfig.model_fields["max_tokens"].default and env_max_tokens is not None:
+        max_tokens = env_max_tokens
+
+    if not provider_type:
+        logger.error(
+            "未配置 AI provider_type（settings.yaml ai.provider_type 或 INFO_AGG_AI_PROVIDER_TYPE 环境变量）"
+        )
+        return None
+    if provider_type not in ("anthropic", "openai"):
+        logger.error("不支持的 AI provider_type: %s", provider_type)
+        return None
+    if not model:
+        logger.error("未配置 AI 模型（settings.yaml ai.model 或 INFO_AGG_AI_MODEL 环境变量）")
+        return None
+    if not api_key:
+        logger.error("未配置 API Key（settings.yaml ai.api_key 或 INFO_AGG_AI_API_KEY 环境变量）")
+        return None
+
+    return ResolvedAIConfig(
+        provider_type=provider_type,
+        model=model,
+        max_tokens=max_tokens,
+        api_key=api_key,
+        base_url=base_url,
+    )

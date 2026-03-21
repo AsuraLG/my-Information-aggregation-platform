@@ -40,7 +40,7 @@ sources:
   - id: "xiaoheihe_game_news"
     desc: "小黑盒游戏资讯"
     type: rss
-    url: "rsshub://xiaoheihe/news"
+    url: "https://rsshub.rss3.workers.dev/xiaoheihe/news"
     tags: ["game"]
     schedule: "0 */6 * * *"  # 每6小时采集一次
     order: 50

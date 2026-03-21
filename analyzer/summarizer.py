@@ -3,7 +3,7 @@ from __future__ import annotations
 import logging
 from datetime import datetime, timezone
 
-from config.loader import load_settings, load_prompts
+from config.loader import load_settings, load_prompts, resolve_ai_config
 from storage.models import UnifiedItem, SummaryResult, DigestResult
 from storage.repository import load_items, save_summaries, save_digest
 from analyzer.ai_client import call_ai
@@ -16,18 +16,8 @@ def run_analysis(date: str) -> list[SummaryResult]:
     """对指定日期的所有条目按 tag 分组进行 AI 分析，返回摘要列表"""
     settings = load_settings()
     prompts_cfg = load_prompts()
-
-    # 配置文件优先，环境变量兜底
-    import os
-    resolved_model = settings.ai.model or os.environ.get("INFO_AGG_AI_MODEL") or None
-    resolved_api_key = settings.ai.api_key or os.environ.get("INFO_AGG_AI_API_KEY") or None
-    resolved_base_url = settings.ai.base_url or os.environ.get("INFO_AGG_AI_BASE_URL") or None
-
-    if not resolved_model:
-        logger.error("未配置 AI 模型（settings.yaml ai.model 或 INFO_AGG_AI_MODEL 环境变量）")
-        return []
-    if not resolved_api_key:
-        logger.error("未配置 API Key（settings.yaml ai.api_key 或 INFO_AGG_AI_API_KEY 环境变量）")
+    ai_config = resolve_ai_config(settings)
+    if ai_config is None:
         return []
 
     items = load_items(date)
@@ -61,11 +51,12 @@ def run_analysis(date: str) -> list[SummaryResult]:
         )
 
         summary_text = call_ai(
+            provider_type=ai_config.provider_type,
             prompt=user_prompt,
-            model=resolved_model,
-            max_tokens=settings.ai.max_tokens,
-            api_key=resolved_api_key,
-            base_url=resolved_base_url,
+            model=ai_config.model,
+            max_tokens=ai_config.max_tokens,
+            api_key=ai_config.api_key,
+            base_url=ai_config.base_url,
             system=system_prompt,
         )
 
@@ -96,11 +87,12 @@ def run_analysis(date: str) -> list[SummaryResult]:
         digest_cfg = prompts_cfg.digest
         user_prompt = digest_cfg.user.format(date=date, summaries_text=summaries_text)
         digest_text = call_ai(
+            provider_type=ai_config.provider_type,
             prompt=user_prompt,
-            model=resolved_model,
-            max_tokens=settings.ai.max_tokens,
-            api_key=resolved_api_key,
-            base_url=resolved_base_url,
+            model=ai_config.model,
+            max_tokens=ai_config.max_tokens,
+            api_key=ai_config.api_key,
+            base_url=ai_config.base_url,
             system=digest_cfg.system,
         )
         if digest_text:

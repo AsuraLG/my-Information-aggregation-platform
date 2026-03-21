@@ -76,7 +76,7 @@
 - `feedparser` — RSS 解析
 - `requests` + `beautifulsoup4` — HTTP 请求与页面解析
 - `apscheduler>=3.10,<4` — 定时任务调度
-- `anthropic` — AI 分析（Anthropic 兼容 API）
+- `anthropic` + `openai` — AI 分析（支持 Anthropic / OpenAI 兼容 API）
 - `jinja2` — 静态页面模板渲染
 - `mistune>=3.0` — markdown → HTML 转换
 - `ghp-import` — GitHub Pages 推送
