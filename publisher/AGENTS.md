@@ -31,7 +31,7 @@
 - 生成时间使用 CST（Asia/Shanghai）时区，格式 `YYYY-MM-DD HH:MM CST`
 - 生成的静态文件输出到 `output/` 目录（已加入 `.gitignore`），再由 `deployer.py` 推送
 - GitHub Pages 目标仓库和分支在 `config/settings.yaml` 中配置
-- 部署失败时记录日志，不影响本地文件生成
+- 部署失败时记录日志并以非零退出码终止（`sys.exit(1)`），确保 GitHub Actions 等 CI 环境能正确检测到失败
 
 ### Testing Requirements
 - **单元测试必须完善**，使用 `pytest`

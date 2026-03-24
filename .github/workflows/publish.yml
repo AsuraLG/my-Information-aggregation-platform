@@ -1,0 +1,66 @@
+name: "Publish"
+
+on:
+  workflow_run:
+    workflows: ["Analyze"]
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      date:
+        description: '发布日期 YYYY-MM-DD（默认昨天）'
+        required: false
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    # 仅在 Analyze 成功完成后运行，或手动触发时运行
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      github.event.workflow_run.conclusion == 'success'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.9'
+
+      - uses: astral-sh/setup-uv@v4
+
+      - name: Install dependencies
+        run: uv sync
+
+      - name: Create settings.yaml from example
+        run: cp config/settings.yaml.example config/settings.yaml
+
+      - name: Download analyzed data
+        run: |
+          RUN_ID=$(gh run list --workflow analyze.yml --branch main --status success --limit 1 --json databaseId -q '.[0].databaseId')
+          if [ -z "$RUN_ID" ]; then
+            echo "::warning::No successful analyze run found"
+            exit 1
+          fi
+          echo "Downloading artifact from analyze run $RUN_ID"
+          gh run download "$RUN_ID" --name analyzed-data --dir data/
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      - name: Configure git for deployment
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Run publish
+        run: |
+          if [ -n "$PUBLISH_DATE" ]; then
+            uv run python main.py publish --date "$PUBLISH_DATE"
+          else
+            uv run python main.py publish
+          fi
+        env:
+          PUBLISH_DATE: ${{ inputs.date }}

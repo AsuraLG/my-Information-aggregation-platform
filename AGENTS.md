@@ -3,7 +3,7 @@
 # my-Information-aggregation-platform
 
 ## Purpose
-个人使用的信息聚合工具，支持本地或单机服务器部署。核心流程：定时采集 RSS 与 GitHub Trending 信息 → 转换为统一格式落库 → 按标签维度执行 AI 摘要分析并生成当日综合 digest → 生成静态页面发布到 GitHub Pages。
+个人使用的信息聚合工具，支持本地部署、单机服务器部署和 GitHub Actions 自动调度。核心流程：定时采集 RSS 与 GitHub Trending 信息 → 转换为统一格式落库 → 按标签维度执行 AI 摘要分析并生成当日综合 digest → 生成静态页面发布到 GitHub Pages。
 
 整个系统以配置文件驱动，无 Web 管理后台，目标是稳定跑通完整闭环，无需人工干预。
 
@@ -14,6 +14,7 @@
 | `README.md` | 项目概述、快速开始、配置说明 |
 | `LICENSE` | GNU GPL v3 — 版权归 AsuraLG (2026) |
 | `main.py` | CLI 入口：collect / analyze / publish / run 子命令 |
+| `.github/workflows/` | GitHub Actions 工作流：collect.yml / analyze.yml / publish.yml |
 | `pyproject.toml` | 项目依赖与构建配置（uv 管理） |
 | `.gitignore` | Python 项目忽略规则，含 data/、output/、config/settings.yaml |
 | `AGENTS.md` | 本文件 — AI Agent 导航文档 |
@@ -33,9 +34,10 @@
 ## For AI Agents
 
 ### 架构概览
-系统是一个 4 层流水线，各层职责严格分离：
+系统是一个 4 层流水线，各层职责严格分离，支持两种调度方式：
 
 ```
+方式一：APScheduler（本地/服务器长期运行）
 [scheduler] ──触发──> [collector] ──原始数据──> [storage]
                                                     │
                                               统一格式数据
@@ -45,6 +47,15 @@
                       摘要结果
                           │
                     [publisher] ──生成──> GitHub Pages
+
+方式二：GitHub Actions（GitHub 托管自动调度）
+[collect.yml] ──触发──> [collector] ──Artifact──> [analyze.yml] ──触发──> [analyzer]
+                                                                            │
+                                                                        摘要结果
+                                                                            │
+                                                   [publish.yml] <──链式触发──┘
+                                                        │
+                                                  [publisher] ──生成──> GitHub Pages
 ```
 
 ### Working In This Directory

@@ -1,0 +1,63 @@
+name: "Analyze"
+
+on:
+  schedule:
+    # UTC 01:00 = Asia/Shanghai 09:00，分析前一天的数据并发布
+    - cron: '0 1 * * *'
+  workflow_dispatch:
+    inputs:
+      date:
+        description: '分析日期 YYYY-MM-DD（默认昨天）'
+        required: false
+        type: string
+
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.9'
+
+      - uses: astral-sh/setup-uv@v4
+
+      - name: Install dependencies
+        run: uv sync
+
+      - name: Create settings.yaml from example
+        run: cp config/settings.yaml.example config/settings.yaml
+
+      - name: Download latest collected data
+        run: |
+          RUN_ID=$(gh run list --workflow collect.yml --branch main --status success --limit 1 --json databaseId -q '.[0].databaseId')
+          if [ -z "$RUN_ID" ]; then
+            echo "::warning::No successful collect run found"
+            exit 1
+          fi
+          echo "Downloading artifact from collect run $RUN_ID"
+          gh run download "$RUN_ID" --name collected-data --dir data/
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      - name: Run analysis
+        run: |
+          if [ -n "$ANALYZE_DATE" ]; then
+            uv run python main.py analyze --date "$ANALYZE_DATE"
+          else
+            uv run python main.py analyze
+          fi
+        env:
+          ANALYZE_DATE: ${{ inputs.date }}
+          INFO_AGG_AI_PROVIDER_TYPE: ${{ secrets.INFO_AGG_AI_PROVIDER_TYPE }}
+          INFO_AGG_AI_MODEL: ${{ secrets.INFO_AGG_AI_MODEL }}
+          INFO_AGG_AI_API_KEY: ${{ secrets.INFO_AGG_AI_API_KEY }}
+          INFO_AGG_AI_BASE_URL: ${{ secrets.INFO_AGG_AI_BASE_URL }}
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: analyzed-data
+          path: data/
+          retention-days: 7
+          if-no-files-found: error
