@@ -45,15 +45,17 @@ sources:
     type: rss
     url: "https://magazine.sebastianraschka.com/feed"
     tags: ["AI"]
-    schedule: "0 9 * * *"
+    schedule: "0 10 * * *"
 
   - id: "github_trending_python"
     type: github_trending
     language: "python"
     period: "daily"
     tags: ["AI", "python", "opensource"]
-    schedule: "0 9 * * *"
+    schedule: "0 10 * * *"
 ```
+
+> **注意**：`schedule` 字段仅在 APScheduler 模式（`main.py run`）下生效。GitHub Actions 模式的调度时间在 `.github/workflows/*.yml` 中独立配置（使用 UTC 时区）。
 
 ## Dependencies
 

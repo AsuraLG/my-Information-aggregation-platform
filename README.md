@@ -8,10 +8,15 @@
 - **AI 摘要**：支持 Anthropic / OpenAI 兼容 API，按标签聚合生成摘要，并额外生成当日综合 digest，支持 system/user 双提示词
 - **静态发布**：Jinja2 渲染 HTML，通过 `ghp-import` 推送到 `gh-pages` 分支
 - **配置驱动**：信息源、标签、prompt、调度、AI 参数均通过 YAML 配置，代码不硬编码业务参数
+- **多种调度方式**：支持手动 CLI、APScheduler 长期运行、GitHub Actions 三种使用模式
 
 ## 项目结构
 
 ```
+├── .github/workflows/     # GitHub Actions 工作流
+│   ├── collect.yml            # 采集工作流
+│   ├── analyze.yml            # 分析工作流
+│   └── publish.yml            # 发布工作流
 ├── collector/          # 采集层：RSS、GitHub Trending
 ├── storage/            # 存储层：JSON 原子写入，统一数据模型
 ├── analyzer/           # 分析层：AI 摘要生成
@@ -79,6 +84,28 @@ uv run python main.py
 uv run python main.py run
 ```
 
+### 5. GitHub Actions 调度（推荐用于 GitHub 托管）
+
+项目提供三个 GitHub Actions 工作流，可在 GitHub 上实现全自动调度，无需本地服务器：
+
+| 工作流 | 触发方式 | 说明 |
+|--------|---------|------|
+| `collect.yml` | 定时 + 手动 | 采集所有信息源，上传数据为 Artifact |
+| `analyze.yml` | 定时 + 手动 | 下载采集数据，AI 分析生成摘要 |
+| `publish.yml` | Analyze 成功后自动触发 + 手动 | 下载分析数据，部署到 GitHub Pages |
+
+**使用前准备**：在仓库 Settings → Secrets and variables → Actions 中添加以下 Secrets：
+
+- `INFO_AGG_AI_PROVIDER_TYPE` — AI 提供商（`anthropic` / `openai`）
+- `INFO_AGG_AI_MODEL` — 模型名称
+- `INFO_AGG_AI_API_KEY` — API 密钥
+- `INFO_AGG_AI_BASE_URL` — API 端点（可选）
+
+**手动触发**：在仓库 Actions 页面选择对应工作流，点击 "Run workflow" 即可。
+
+> **注意**：GitHub Actions 模式和 APScheduler 模式（`main.py run`）的调度是独立的。
+> Actions 的 cron 在 `.github/workflows/*.yml` 中配置（UTC 时区），APScheduler 的 cron 在 `config/sources.yaml` 和 `config/schedule.yaml` 中配置（按 `timezone` 字段解释）。
+
 ## 配置说明
 
 ### AI 配置（`config/settings.yaml`）
@@ -96,7 +123,7 @@ ai:
 
 ### 信息源（`config/sources.yaml`）
 
-`sources.yaml` 中每个信息源的 `schedule` 都会注册成一个独立采集 job，只采集该信息源；不同信息源的采集任务与分析/发布任务使用独立执行器，可并行运行。
+`sources.yaml` 中每个信息源的 `schedule` 都会注册成一个独立采集 job，只采集该信息源；不同信息源的采集任务与分析/发布任务使用独立执行器，可并行运行。**注意**：`schedule` 字段仅在 APScheduler 模式（`main.py run`）下生效，GitHub Actions 模式下的调度时间在 `.github/workflows/*.yml` 中独立配置。
 
 ```yaml
 sources:
@@ -106,7 +133,7 @@ sources:
     language: "python"
     period: "daily"
     tags: ["AI", "python", "opensource"]
-    schedule: "0 9 * * *"   # cron，按 config/schedule.yaml 中的 timezone 解释（默认 Asia/Shanghai）
+    schedule: "0 10 * * *"   # cron，按 config/schedule.yaml 中的 timezone 解释（默认 Asia/Shanghai）
 ```
 
 支持的 `type`：`rss`、`github_trending`
@@ -115,7 +142,7 @@ sources:
 
 ```yaml
 timezone: "Asia/Shanghai"
-analysis_schedule: "0 10 * * *"
+analysis_schedule: "0 9 * * *"
 ```
 
 - `timezone` 控制 scheduler cron 的解释时区，以及未显式传入 `--date` 时 analyze/publish 默认“昨天”的日期语义。

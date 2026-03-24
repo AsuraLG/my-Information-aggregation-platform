@@ -1,0 +1,48 @@
+name: "Collect"
+
+on:
+  schedule:
+    # UTC 02:00 = Asia/Shanghai 10:00，匹配当前所有信息源的 cron
+    # 如果未来新增更高频的信息源，调整此 cron 即可
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+    inputs:
+      source_id:
+        description: '指定信息源 ID（留空则采集全部）'
+        required: false
+        type: string
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.9'
+
+      - uses: astral-sh/setup-uv@v4
+
+      - name: Install dependencies
+        run: uv sync
+
+      - name: Create settings.yaml from example
+        run: cp config/settings.yaml.example config/settings.yaml
+
+      - name: Run collection
+        run: |
+          if [ -n "$SOURCE_ID" ]; then
+            uv run python main.py collect --source "$SOURCE_ID"
+          else
+            uv run python main.py collect
+          fi
+        env:
+          SOURCE_ID: ${{ inputs.source_id }}
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: collected-data
+          path: data/
+          retention-days: 7
+          if-no-files-found: error

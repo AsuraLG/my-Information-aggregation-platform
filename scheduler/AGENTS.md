@@ -4,7 +4,9 @@
 # scheduler
 
 ## Purpose
-调度模块，是整个系统的驱动引擎。按照 `config/schedule.yaml` 中定义的时间规则，定时触发采集任务和分析发布任务，确保整个闭环在无人干预下稳定重复执行。
+调度模块，是整个系统的驱动引擎之一。按照 `config/schedule.yaml` 中定义的时间规则，定时触发采集任务和分析发布任务，确保整个闭环在无人干预下稳定重复执行。
+
+> **注意**：本模块仅用于 APScheduler 模式（`main.py run`）。GitHub Actions 模式通过 `.github/workflows/*.yml` 独立调度，不经过本模块。两种调度方式互不影响。
 
 ## Key Files
 

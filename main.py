@@ -73,6 +73,7 @@ def cmd_publish(date: str | None = None) -> None:
         logger.info("发布完成")
     else:
         logger.error("发布失败")
+        sys.exit(1)
 
 
 def cmd_run() -> None:
