@@ -55,6 +55,17 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
+      - name: Restore historical pages from gh-pages
+        run: |
+          mkdir -p output
+          git fetch origin gh-pages
+          # 用 git archive 提取 gh-pages 上符合 YYYY-MM-DD 格式的历史目录到 output/
+          # 不污染当前工作目录，renderer 扫描 output/ 即可获取完整历史日期列表
+          for date_dir in $(git ls-tree --name-only origin/gh-pages | grep -E '^[0-9]{4}-[0-9]{2}-[0-9]{2}$'); do
+            git archive origin/gh-pages "$date_dir/" | tar -x -C output/
+          done
+          echo "Restored $(ls output/ | grep -cE '^[0-9]{4}-[0-9]{2}-[0-9]{2}$') historical date(s) to output/"
+
       - name: Run publish
         run: |
           if [ -n "$PUBLISH_DATE" ]; then

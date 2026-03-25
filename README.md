@@ -106,6 +106,8 @@ uv run python main.py run
 > **注意**：GitHub Actions 模式和 APScheduler 模式（`main.py run`）的调度是独立的。
 > Actions 的 cron 在 `.github/workflows/*.yml` 中配置（UTC 时区），APScheduler 的 cron 在 `config/sources.yaml` 和 `config/schedule.yaml` 中配置（按 `timezone` 字段解释）。
 
+> **历史页面归档**：GitHub Actions 模式下，每次 `publish.yml` 执行前会从 gh-pages 分支恢复所有历史 `YYYY-MM-DD/` 目录，确保 renderer 能看到完整历史日期列表。历史 HTML 页面以 gh-pages 分支本身为权威来源，不受 Artifact 7 天过期限制影响。
+
 ## 配置说明
 
 ### AI 配置（`config/settings.yaml`）

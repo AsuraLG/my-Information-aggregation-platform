@@ -27,6 +27,11 @@ _无子目录。_
 - 数据按日期分区存储，路径约定：`data/items/YYYY-MM-DD.json`、`data/summaries/YYYY-MM-DD.json`、`data/digest/YYYY-MM-DD.json`
 - `converter.py` 中每种信息源类型对应一个转换函数，新增信息源时在此扩展
 - repository 写入采用原子写入，避免中途中断导致文件损坏
+- `list_available_dates()` 扫描两个来源并合并去重：
+  - 来源一：`data/summaries/*.json`（本地运行的权威来源）
+  - 来源二：`output/{date}/index.html`（GitHub Actions 模式下从 gh-pages 恢复的历史 HTML）
+  - 两个来源以 `set` 合并去重，返回降序排列的日期列表
+  - 这确保了 GitHub Actions 模式下历史归档日期不因 artifact 7 天过期而丢失
 
 ### Testing Requirements
 - **单元测试必须完善**，使用 `pytest`

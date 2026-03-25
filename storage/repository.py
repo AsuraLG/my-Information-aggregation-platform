@@ -118,18 +118,29 @@ def load_summaries(date: str) -> list[SummaryResult]:
 
 
 def list_available_dates() -> list[str]:
-    """扫描 data/summaries/ 目录下的 JSON 文件名，返回降序排列的日期列表。
+    """扫描所有已知来源，返回降序排列的日期列表。
 
-    文件名格式为 YYYY-MM-DD.json，提取日期部分并排序。
-    忽略非 .json 文件和文件名不匹配日期格式的文件。
+    来源一：data/summaries/*.json（本地运行的权威来源）
+    来源二：output/{date}/index.html（GitHub Actions 模式下从 gh-pages 恢复的历史 HTML）
+    两个来源合并去重，确保 GitHub Actions 场景下历史归档日期不丢失。
     """
+    dates: set[str] = set()
+
+    # 来源一：data/summaries/*.json
     summaries_dir = _data_dir() / "summaries"
-    if not summaries_dir.exists():
-        return []
-    dates = [
-        f.stem for f in summaries_dir.iterdir()
-        if f.is_file() and f.suffix == ".json" and _DATE_RE.match(f.stem)
-    ]
+    if summaries_dir.exists():
+        for f in summaries_dir.iterdir():
+            if f.is_file() and f.suffix == ".json" and _DATE_RE.match(f.stem):
+                dates.add(f.stem)
+
+    # 来源二：output/{date}/index.html（GitHub Actions 恢复的历史页面）
+    from config.loader import load_settings
+    output_dir = Path(load_settings().publish.output_dir)
+    if output_dir.exists():
+        for d in output_dir.iterdir():
+            if d.is_dir() and _DATE_RE.match(d.name) and (d / "index.html").exists():
+                dates.add(d.name)
+
     return sorted(dates, reverse=True)
 
 

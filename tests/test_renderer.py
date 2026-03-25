@@ -75,6 +75,13 @@ def test_backward_compat_no_order():
 
 # ── Step 3: list_available_dates ─────────────────────────────────────────────
 
+def _make_settings_with_output(output_dir: Path) -> MagicMock:
+    """构造仅含 publish.output_dir 的 settings mock"""
+    s = MagicMock()
+    s.publish.output_dir = str(output_dir)
+    return s
+
+
 def test_list_available_dates(tmp_path: Path):
     summaries_dir = tmp_path / "summaries"
     summaries_dir.mkdir()
@@ -86,7 +93,10 @@ def test_list_available_dates(tmp_path: Path):
     (summaries_dir / "2026-03-20.json.tmp").write_text("[]")
     (summaries_dir / "readme.txt").write_text("ignore")
 
-    with patch("storage.repository._data_dir", return_value=tmp_path):
+    nonexistent_output = tmp_path / "no_output"
+    with patch("storage.repository._data_dir", return_value=tmp_path), \
+         patch("config.loader.load_settings",
+               return_value=_make_settings_with_output(nonexistent_output)):
         from storage.repository import list_available_dates
         dates = list_available_dates()
 
@@ -94,16 +104,66 @@ def test_list_available_dates(tmp_path: Path):
 
 
 def test_list_available_dates_empty(tmp_path: Path):
-    with patch("storage.repository._data_dir", return_value=tmp_path):
+    nonexistent_output = tmp_path / "no_output"
+    with patch("storage.repository._data_dir", return_value=tmp_path), \
+         patch("config.loader.load_settings",
+               return_value=_make_settings_with_output(nonexistent_output)):
         from storage.repository import list_available_dates
         assert list_available_dates() == []
 
 
 def test_list_available_dates_no_dir(tmp_path: Path):
     nonexistent = tmp_path / "no_such_dir"
-    with patch("storage.repository._data_dir", return_value=nonexistent):
+    nonexistent_output = tmp_path / "no_output"
+    with patch("storage.repository._data_dir", return_value=nonexistent), \
+         patch("config.loader.load_settings",
+               return_value=_make_settings_with_output(nonexistent_output)):
         from storage.repository import list_available_dates
         assert list_available_dates() == []
+
+
+def test_list_available_dates_from_output_dir(tmp_path: Path):
+    """来源二：output/{date}/index.html 补充历史日期（无 summaries）"""
+    output_dir = tmp_path / "output"
+    for d in ["2026-03-17", "2026-03-16"]:
+        (output_dir / d).mkdir(parents=True)
+        (output_dir / d / "index.html").write_text("<html/>")
+    # 不应被识别：无 index.html 或格式不符
+    (output_dir / "assets").mkdir()
+    (output_dir / "2026-03-15").mkdir()  # 无 index.html
+
+    nonexistent_data = tmp_path / "no_data"
+    with patch("storage.repository._data_dir", return_value=nonexistent_data), \
+         patch("config.loader.load_settings",
+               return_value=_make_settings_with_output(output_dir)):
+        from storage.repository import list_available_dates
+        dates = list_available_dates()
+
+    assert dates == ["2026-03-17", "2026-03-16"]
+
+
+def test_list_available_dates_merges_both_sources(tmp_path: Path):
+    """来源一和来源二合并去重，按日期降序返回"""
+    # 来源一：summaries
+    summaries_dir = tmp_path / "summaries"
+    summaries_dir.mkdir()
+    (summaries_dir / "2026-03-20.json").write_text("[]")
+    (summaries_dir / "2026-03-19.json").write_text("[]")
+
+    # 来源二：output（含一个与来源一重叠的日期）
+    output_dir = tmp_path / "output"
+    for d in ["2026-03-19", "2026-03-17"]:
+        (output_dir / d).mkdir(parents=True)
+        (output_dir / d / "index.html").write_text("<html/>")
+
+    with patch("storage.repository._data_dir", return_value=tmp_path), \
+         patch("config.loader.load_settings",
+               return_value=_make_settings_with_output(output_dir)):
+        from storage.repository import list_available_dates
+        dates = list_available_dates()
+
+    # 去重后降序：20 > 19 > 17
+    assert dates == ["2026-03-20", "2026-03-19", "2026-03-17"]
 
 
 # ── Step 4: ordering logic ───────────────────────────────────────────────────

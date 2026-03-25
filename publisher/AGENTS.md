@@ -25,7 +25,9 @@
 
 ### Working In This Directory
 - `render(date)` **全量重建**所有历史日期页面 + 首页，返回本次 date 对应的页面路径；`deploy()` 推送到 GitHub Pages
-- 每次 render 遍历 `data/summaries/*.json` 发现所有历史日期，逐一渲染到 `output/{date}/index.html`，同时生成 `output/index.html` 首页
+- 每次 render 调用 `storage.repository.list_available_dates()` 获取全部历史日期，逐一渲染到 `output/{date}/index.html`，同时生成 `output/index.html` 首页
+- `list_available_dates()` 扫描两个来源（`data/summaries/` + `output/{date}/index.html`），确保 GitHub Actions 场景下历史日期不丢失（见 `storage/AGENTS.md`）
+- **GitHub Actions 场景**：publish workflow 在执行 `main.py publish` 前，先用 `git archive` 从 gh-pages 分支恢复所有历史 `YYYY-MM-DD/` 目录到 `output/`，使 renderer 能感知全部历史日期
 - 渲染时从 `config/tags.yaml` 和 `config/sources.yaml` 加载 id→desc/order 映射，按 `order` 字段升序排列 tag 和 source
 - AI 摘要为 markdown 格式，渲染时通过 `mistune.create_markdown(escape=True)` 转为 HTML
 - 生成时间使用 CST（Asia/Shanghai）时区，格式 `YYYY-MM-DD HH:MM CST`
