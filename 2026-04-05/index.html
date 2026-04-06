@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>我的信息聚合</title>
+  <title>我的信息聚合 · 2026-04-05</title>
   <style>
     :root {
       color-scheme: light;
@@ -75,45 +75,31 @@
       color: var(--muted);
       font-size: .84rem;
     }
-    .date-list {
-      background: rgba(255,255,255,0.72);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-lg);
-      box-shadow: var(--shadow);
-      padding: 20px 22px;
-      margin-bottom: 24px;
-      backdrop-filter: blur(8px);
-    }
-    .date-list h2 {
-      font-size: 1rem;
-      color: #0f172a;
-      margin: 0 0 14px;
-    }
-    .date-list ul {
-      list-style: none;
-      padding: 0;
-      margin: 0;
+    .date-nav {
       display: flex;
       flex-wrap: wrap;
       gap: 10px;
+      align-items: center;
+      margin-bottom: 22px;
     }
-    .date-list li a {
+    .date-nav a, .date-nav .current {
       display: inline-flex;
       align-items: center;
-      gap: 6px;
-      min-height: 38px;
+      justify-content: center;
+      min-height: 40px;
       padding: 0 14px;
       border-radius: 999px;
       border: 1px solid var(--border);
-      background: var(--surface-strong);
+      background: rgba(255,255,255,0.72);
       color: var(--text);
       text-decoration: none;
-      font-size: .88rem;
+      font-size: .9rem;
     }
-    .date-list li a:hover { border-color: rgba(37, 99, 235, 0.35); color: var(--primary); }
-    .date-list .latest {
-      font-size: .74rem;
+    .date-nav a:hover { border-color: rgba(37, 99, 235, 0.35); color: var(--primary); }
+    .date-nav .current {
+      background: linear-gradient(135deg, var(--primary-soft), var(--accent-soft));
       color: var(--primary);
+      font-weight: 600;
     }
     .digest-block {
       background: linear-gradient(135deg, rgba(37, 99, 235, 0.14), rgba(124, 58, 237, 0.12));
@@ -218,62 +204,12 @@
       </div>
     </section>
 
-    
-    <nav class="date-list">
-      <h2>历史归档</h2>
-      <ul>
-        
-        <li>
-          <a href="./2026-04-05/index.html">2026-04-05<span class="latest">最新</span></a>
-        </li>
-        
-        <li>
-          <a href="./2026-04-04/index.html">2026-04-04</a>
-        </li>
-        
-        <li>
-          <a href="./2026-04-03/index.html">2026-04-03</a>
-        </li>
-        
-        <li>
-          <a href="./2026-04-02/index.html">2026-04-02</a>
-        </li>
-        
-        <li>
-          <a href="./2026-04-01/index.html">2026-04-01</a>
-        </li>
-        
-        <li>
-          <a href="./2026-03-31/index.html">2026-03-31</a>
-        </li>
-        
-        <li>
-          <a href="./2026-03-30/index.html">2026-03-30</a>
-        </li>
-        
-        <li>
-          <a href="./2026-03-29/index.html">2026-03-29</a>
-        </li>
-        
-        <li>
-          <a href="./2026-03-28/index.html">2026-03-28</a>
-        </li>
-        
-        <li>
-          <a href="./2026-03-27/index.html">2026-03-27</a>
-        </li>
-        
-        <li>
-          <a href="./2026-03-26/index.html">2026-03-26</a>
-        </li>
-        
-        <li>
-          <a href="./2026-03-25/index.html">2026-03-25</a>
-        </li>
-        
-      </ul>
+    <nav class="date-nav">
+      <a href="../2026-04-04/index.html">&larr; 2026-04-04</a>
+      <span class="current">2026-04-05</span>
+      
+      <a href="../index.html">首页</a>
     </nav>
-    
 
     
     <section class="digest-block">
